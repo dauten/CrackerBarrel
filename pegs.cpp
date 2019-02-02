@@ -35,6 +35,10 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
   if(board[x][y] == 2)
     return 0;
 
+  if(x == 6){
+    printf("x is 6, y is %d, dir is %d\n", y, dir);
+  }
+
   if(dir == 0)
   {
     targ_x = x;
@@ -72,10 +76,13 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
     return 0;
 
   //action to be taken determined, now we determine if its possible
+//  printf("%d,%d\n", x, y);
   if(board[x][y] == 1 && board[targ_x][targ_y] == 0 && board[victum_x][victum_y] == 1){
     //then we can jump
     out[x][y] = out[victum_x][victum_y] = 0;
     out[targ_x][targ_y] = 1;
+    if(dir == 0)
+      printf("\tthat's valid\n");
     return 1;
   }
 
@@ -101,7 +108,7 @@ unsigned long long toNumber(int plain[7][7]){
   for(int x = 0; x < 7; x++){
     for(int y = 0; y < 7; y++){
       cipher += c*(1==plain[x][y]);
-      c *= 2;
+      c *= 3;
     }
   }
   return cipher;
@@ -110,7 +117,7 @@ unsigned long long toNumber(int plain[7][7]){
 void dfs(int sm[][7]){
   std::stack<nodeP> open;
 	nodeP *np;
-	np = new nodeP[2000000];
+	np = new nodeP[200000];
 	int npCount = 0;
 	std::set<unsigned long long> close;
 	node *start, *current, *succ;
@@ -129,7 +136,7 @@ void dfs(int sm[][7]){
     current = open.top();
 		open.pop();
 
-/*    for(int a = 0; a < 7; a++){
+    for(int a = 0; a < 7; a++){
       for(int b = 0; b < 7; b++){
         printf("%d ", (current->b)[b][a]);
       }
@@ -137,7 +144,7 @@ void dfs(int sm[][7]){
     }
 
     printf("\n");
-*/
+
 		//		cout << getnumber(current->m) << endl;
 		if (isBeat(current->b))
 		{
@@ -147,26 +154,23 @@ void dfs(int sm[][7]){
 		}
 		else
 		{
-      for(int a = 0; a < 7; a++){
-        for(int b = 0; b < 7; b++){
+      for(int a = 0; a < 9; a++){
+        for(int b = 0; b < 9; b++){
           if(jump(b, a, current->b, 0, temp) == 1){
+            printf("should be valid\n");
             sucnum = toNumber(temp);
             if(close.find(sucnum) == close.end()){
+              printf("and it is because find is %llu and end is %llu\n", close.find(sucnum), close.end());
               succ = new node(temp, current);
               close.insert(sucnum);
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
-              printf("found another path up from %d,%d\n", a, b);
-              for(int a = 0; a < 7; a++){
-                for(int b = 0; b < 7; b++){
-                  printf("%d ", (current->b)[b][a]);
-                }
-                printf("\n");
-              }
+              printf("found another path up from %d,%d\n", b, a);
 
-              printf("\n");
             }
+            else
+              printf("but it isn't because find is %llu and end is %llu\n", close.find(sucnum), close.end());
           }
           if(jump(b, a, current->b, 1, temp) == 1){
             sucnum = toNumber(temp);
@@ -177,14 +181,7 @@ void dfs(int sm[][7]){
               np[npCount++] = succ;
               gencount++;
               printf("found another path right from %d,%d\n", a, b);
-              for(int a = 0; a < 7; a++){
-                for(int b = 0; b < 7; b++){
-                  printf("%d ", (current->b)[b][a]);
-                }
-                printf("\n");
-              }
 
-              printf("\n");
             }
           }
           if(jump(b, a, current->b, 2, temp) == 1){
@@ -196,14 +193,7 @@ void dfs(int sm[][7]){
               np[npCount++] = succ;
               gencount++;
               printf("found another path down from %d,%d\n", a, b);
-              for(int a = 0; a < 7; a++){
-                for(int b = 0; b < 7; b++){
-                  printf("%d ", (current->b)[b][a]);
-                }
-                printf("\n");
-              }
 
-              printf("\n");
             }
           }
           if(jump(b, a, current->b, 3, temp) == 1){
@@ -215,14 +205,7 @@ void dfs(int sm[][7]){
               np[npCount++] = succ;
               gencount++;
               printf("found another path left from %d,%d\n", a, b);
-              for(int a = 0; a < 7; a++){
-                for(int b = 0; b < 7; b++){
-                  printf("%d ", (current->b)[b][a]);
-                }
-                printf("\n");
-              }
 
-              printf("\n");
             }
           }
 
