@@ -3,6 +3,7 @@
 #include <string>
 #include <stack>
 #include <queue>
+#include <set>
 
 struct node
 {
@@ -10,16 +11,71 @@ struct node
   node *parent;
   node *next;
 
-  node (int sm[][3], node* p=NULL, node* n=NULL)
+  node (int sm[][7], node* p=NULL, node* n=NULL)
 	{
-    for (int r=0;r<3;r++)
-		  for (int c=0;c<3;c++)
+    for (int r=0;r<7;r++)
+		  for (int c=0;c<7;c++)
 			   b[r][c]=sm[r][c];
 
     parent=p;
 		next=n;
 	}
 };
+
+int isBeat(int board[][7]){
+  int i = 0; // one count
+  for(int a = 0; a < 7; a++){
+    for(int b = 0; b < 7; b++){
+      i += (board[b][a] == 1);
+      printf("%d\n", i);
+    }
+  }
+  return i == 1;
+}
+unsigned long long toNumber(int plain[7][7]){
+  unsigned long long cipher = 0;
+  //while it would be very dumb to keep the array
+  //in a numeric format, we can encode it for
+  //comparative purposes.  There are 2^49 states
+  int c = 1;
+  for(int x = 0; x < 7; x++){
+    for(int y = 0; y < 7; y++){
+      cipher += c*(1==plain[x][y]);
+      c *= 2;
+    }
+  }
+  return cipher;
+}
+
+void dfs(int board[][7]){
+  std::stack<node*> open;
+  int npC = 0;
+  std::set<unsigned long long> visited;
+  node *current = (new node(board));
+  open.push(current);
+
+  visited.insert(toNumber(board));
+  int success = 0;
+  while(!open.empty() && !success){
+    current = open.top();
+    open.pop();
+    if(isBeat(current->b)){
+        success = 1;
+    }
+    else{
+      //    get all possible child states given possible moves
+      //    each one that is not is set, enqueue and add to set
+      //
+    }
+  }
+
+  //insert start board into stack
+  //while solution is not found and stack is not empty...
+  //    look at top of stack
+  //    get all possible child states given possible moves
+  //    each one that is not is set, enqueue and add to set
+  //
+}
 
 /*
 * given a source peg, a board, and a direction, that peg
