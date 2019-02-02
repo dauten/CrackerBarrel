@@ -53,8 +53,7 @@ int canJump(int x, int y, int board[][7], int dir){
     victum_y = y;
   }
 
-  if(targ_x < 0 || targ_x > 6 || targ_y < 0 || targ_y > 6)
-    return 0;
+
 
   //action to be taken determined, now we determine if its possible
   if(board[x][y] == 1 && board[targ_x][targ_y] == 0 && board[victum_x][victum_y] == 1){
@@ -73,9 +72,7 @@ int canJump(int x, int y, int board[][7], int dir){
 int jump(int x, int y, int board[][7], int dir, int out[][7]){
   //dir; up = 0, right = 1, down = 2, left = 3
   int targ_x, targ_y, victum_x, victum_y;
-  if(!canJump(x, y, board, dir)){
-    return 0;
-  }
+
   if(dir == 0)
   {
     targ_x = x;
@@ -93,11 +90,11 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
   else if(dir == 2)
   {
     targ_x = x;
-    targ_y = y - 2;
+    targ_y = y + 2;
     victum_x = x;
-    victum_y = y - 1;
+    victum_y = y + 1;
   }
-  else if(dir == 0)
+  else if(dir == 3)
   {
     targ_x = x - 2;
     targ_y = y;
@@ -109,6 +106,9 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
       out[a][b] = board[a][b];
     }
   }
+  if(targ_x < 0 || targ_x > 6 || targ_y < 0 || targ_y > 6)
+    return 0;
+
   //action to be taken determined, now we determine if its possible
   if(board[x][y] == 1 && board[targ_x][targ_y] == 0 && board[victum_x][victum_y] == 1){
     //then we can jump
@@ -149,7 +149,7 @@ void dfs(int sm[][7]){
 	nodeP *np;
 	np = new nodeP[200000];
 	int npCount = 0;
-	std::set<long long unsigned> close;
+	std::set<unsigned long long> close;
 	node *start, *current, *succ;
 	long sucnum;
 	start = new node(sm);
@@ -163,12 +163,21 @@ void dfs(int sm[][7]){
 	//	cout << getnumber(start->m) << endl;
 	while (!open.empty() && !success)
 	{
+
+
     current = open.top();
 		open.pop();
+    for(int a = 0; a < 7; a++){
+      for(int b = 0; b < 7; b++){
+        printf("%d ", (current->b)[b][a]);
+      }
+      printf("\n");
+    }
+    printf("\n");
 		//		cout << getnumber(current->m) << endl;
 		if (isBeat(current->b))
 		{
-			std::cout << "Total of " << gencount
+			std::cout << "Solution Found.  Total of " << gencount
 				<< " nodes examined.\n\n";
 			success = 1;
 		}
@@ -176,7 +185,8 @@ void dfs(int sm[][7]){
 		{
       for(int a = 0; a < 7; a++){
         for(int b = 0; b < 7; b++){
-          if(jump(a, b, sm, 0, temp) == 1){
+
+          if(jump(a, b, current->b, 0, temp) == 1){
             sucnum = toNumber(temp);
             if(close.find(sucnum) == close.end()){
               succ = new node(temp, current);
@@ -184,9 +194,10 @@ void dfs(int sm[][7]){
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
+              printf("found another path\n");
             }
           }
-          if(jump(a, b, sm, 1, temp) == 1){
+          if(jump(a, b, current->b, 1, temp) == 1){
             sucnum = toNumber(temp);
             if(close.find(sucnum) == close.end()){
               succ = new node(temp, current);
@@ -194,9 +205,10 @@ void dfs(int sm[][7]){
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
+              printf("found another path\n");
             }
           }
-          if(jump(a, b, sm, 2, temp) == 1){
+          if(jump(a, b, current->b, 2, temp) == 1){
             sucnum = toNumber(temp);
             if(close.find(sucnum) == close.end()){
               succ = new node(temp, current);
@@ -204,9 +216,10 @@ void dfs(int sm[][7]){
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
+              printf("found another path\n");
             }
           }
-          if(jump(a, b, sm, 3, temp) == 1){
+          if(jump(a, b, current->b, 3, temp) == 1){
             sucnum = toNumber(temp);
             if(close.find(sucnum) == close.end()){
               succ = new node(temp, current);
@@ -214,6 +227,7 @@ void dfs(int sm[][7]){
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
+              printf("found another path\n");
             }
           }
 
