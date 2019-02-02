@@ -35,9 +35,6 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
   if(board[x][y] == 2)
     return 0;
 
-  if(x == 6){
-    printf("x is 6, y is %d, dir is %d\n", y, dir);
-  }
 
   if(dir == 0)
   {
@@ -81,8 +78,7 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
     //then we can jump
     out[x][y] = out[victum_x][victum_y] = 0;
     out[targ_x][targ_y] = 1;
-    if(dir == 0)
-      printf("\tthat's valid\n");
+
     return 1;
   }
 
@@ -136,14 +132,100 @@ void dfs(int sm[][7]){
     current = open.top();
 		open.pop();
 
-    for(int a = 0; a < 7; a++){
-      for(int b = 0; b < 7; b++){
-        printf("%d ", (current->b)[b][a]);
-      }
-      printf("\n");
-    }
+		//		cout << getnumber(current->m) << endl;
+		if (isBeat(current->b))
+		{
+			std::cout << "Solution Found.  Total of " << gencount
+				<< " nodes examined.\n\n";
+			success = 1;
+		}
+		else
+		{
+      for(int a = 0; a < 9; a++){
+        for(int b = 0; b < 9; b++){
+          if(jump(b, a, current->b, 0, temp) == 1){
+            sucnum = toNumber(temp);
+            if(close.find(sucnum) == close.end()){
+              succ = new node(temp, current);
+              close.insert(sucnum);
+              open.push(succ);
+              np[npCount++] = succ;
+              gencount++;
 
-    printf("\n");
+            }
+
+          }
+          if(jump(b, a, current->b, 1, temp) == 1){
+            sucnum = toNumber(temp);
+            if(close.find(sucnum) == close.end()){
+              succ = new node(temp, current);
+              close.insert(sucnum);
+              open.push(succ);
+              np[npCount++] = succ;
+              gencount++;
+
+            }
+          }
+          if(jump(b, a, current->b, 2, temp) == 1){
+            sucnum = toNumber(temp);
+            if(close.find(sucnum) == close.end()){
+              succ = new node(temp, current);
+              close.insert(sucnum);
+              open.push(succ);
+              np[npCount++] = succ;
+              gencount++;
+
+            }
+          }
+          if(jump(b, a, current->b, 3, temp) == 1){
+            sucnum = toNumber(temp);
+            if(close.find(sucnum) == close.end()){
+              succ = new node(temp, current);
+              close.insert(sucnum);
+              open.push(succ);
+              np[npCount++] = succ;
+              gencount++;
+            }
+          }
+        }
+      }
+		}
+	} // end of while
+
+	if (!success)
+	{
+		std::cout << "No solution.\n";
+		std::cout << "Total of " << gencount
+			<< " nodes examined.\n\n";
+	}
+
+	for (int j = 0; j<npCount; j++)
+		delete np[j];
+
+	delete[] np;
+}
+
+void bfs(int sm[][7]){
+  std::queue<nodeP> open;
+	nodeP *np;
+	np = new nodeP[200000];
+	int npCount = 0;
+	std::set<unsigned long long> close;
+	node *start, *current, *succ;
+	long sucnum;
+	start = new node(sm);
+						  //	cout << start->parent << endl;
+	int temp[7][7], success = 0;
+
+	open.push(start);
+	np[npCount++] = start;
+	close.insert(toNumber(start->b));
+	long gencount = 1;
+	//	cout << getnumber(start->m) << endl;
+	while (!open.empty() && !success)
+	{
+    current = open.front();
+		open.pop();
 
 		//		cout << getnumber(current->m) << endl;
 		if (isBeat(current->b))
@@ -157,20 +239,14 @@ void dfs(int sm[][7]){
       for(int a = 0; a < 9; a++){
         for(int b = 0; b < 9; b++){
           if(jump(b, a, current->b, 0, temp) == 1){
-            printf("should be valid\n");
             sucnum = toNumber(temp);
             if(close.find(sucnum) == close.end()){
-              printf("and it is because find is %llu and end is %llu\n", close.find(sucnum), close.end());
               succ = new node(temp, current);
               close.insert(sucnum);
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
-              printf("found another path up from %d,%d\n", b, a);
-
             }
-            else
-              printf("but it isn't because find is %llu and end is %llu\n", close.find(sucnum), close.end());
           }
           if(jump(b, a, current->b, 1, temp) == 1){
             sucnum = toNumber(temp);
@@ -180,7 +256,6 @@ void dfs(int sm[][7]){
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
-              printf("found another path right from %d,%d\n", a, b);
 
             }
           }
@@ -192,7 +267,6 @@ void dfs(int sm[][7]){
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
-              printf("found another path down from %d,%d\n", a, b);
 
             }
           }
@@ -204,7 +278,6 @@ void dfs(int sm[][7]){
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
-              printf("found another path left from %d,%d\n", a, b);
 
             }
           }
@@ -228,7 +301,6 @@ void dfs(int sm[][7]){
 
 	delete[] np;
 }
-
 
 
 int main(){
@@ -300,6 +372,6 @@ int main(){
 
   printf("Now DFSing:\n");
 
-  dfs(board);
+  bfs(board);
   return 0;
 }
