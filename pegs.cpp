@@ -1,3 +1,12 @@
+/*
+* Author: Dale Auten
+* Date:   2/4/2019
+* Desc:   Peg hopping game naive solution.
+*         DFS solves all given inputs
+*         BFS solves all but diamond and solitaire (runs out of memory)
+*         Some pieces of code modifed from 8-tile game given.
+*/
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -5,11 +14,15 @@
 #include <queue>
 #include <set>
 
+/*
+* data structure for backtracking, from 8-tile
+*/
 struct node{
   int b[7][7];
   node *parent;
   node *next;
 
+  //ctor
   node (int sm[][7], node* p=NULL, node* n=NULL)
 	{
     for (int r=0;r<7;r++)
@@ -32,10 +45,12 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
   //dir; up = 0, right = 1, down = 2, left = 3
   int targ_x, targ_y, victum_x, victum_y;
 
+  //walls can't jump
   if(board[x][y] == 2)
     return 0;
 
-
+  //use direction and jumping peg to find where peg goes
+  //and which peg is being jumped over
   if(dir == 0)
   {
     targ_x = x;
@@ -64,16 +79,19 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
     victum_x = x - 1;
     victum_y = y;
   }
+
+  //we don't want to mutate original board but rather something passed by user
   for(int a = 0; a < 7; a++){
     for(int b = 0; b < 7; b++){
       out[a][b] = board[a][b];
     }
   }
+
+  //make sure we aren't going OOB
   if(targ_x < 0 || targ_x > 6 || targ_y < 0 || targ_y > 6)
     return 0;
 
   //action to be taken determined, now we determine if its possible
-//  printf("%d,%d\n", x, y);
   if(board[x][y] == 1 && board[targ_x][targ_y] == 0 && board[victum_x][victum_y] == 1){
     //then we can jump
     out[x][y] = out[victum_x][victum_y] = 0;
@@ -85,6 +103,9 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]){
   return 0;
 }
 
+/*
+* Checks if there is only one peg remaining
+*/
 int isBeat(int board[][7]){
   int i = 0; // one count
   for(int a = 0; a < 7; a++){
@@ -95,41 +116,52 @@ int isBeat(int board[][7]){
   return i == 1;
 }
 
-void printsolution(node* n)
-{
+/*
+* Backtracks through nodes to get path
+*/
+void printsolution(node* n){
 	// set up next for printing
-//	n->next=0;
+  //each node has a parent but no child,
+  //so set each node's parent's child equal to original node
+  //this way we can start at original state and go down descendents
 	while (n->parent)
 	{
 		n->parent->next = n;
 		n = n->parent;
 	}
 
+  //n is set to original state
 	int count = -1;
 	while(n)
 	{
-//		cout << n << endl;
+    //go through all children, printing them out
 		count++;
-		std::cout << '\n';
+		printf("\n");
 		for (int r=0;r<7;r++)
 		{
 			for (int c=0;c<7;c++)
-			  if (n->b[c][r])
-				std::cout << n->b[c][r] << " ";
+			  if (n->b[c][r] == 1)
+				    printf("%d ", n->b[c][r]);
+        else if(n->b[c][r])
+            printf("  ");
 			  else
-				std::cout << "0 ";
-			std::cout << '\n';
+				    printf("0 ");
+			printf("\n");
 		}
 		n = n->next;
 	}
 	printf("Optimal solution has %d steps.\n", count);
 }
 
+/*
+* Encodes state as a number, similar logic to how chmod on Unix
+* works but exapanded to include walls and 49 locations
+*/
 unsigned long long toNumber(int plain[7][7]){
   unsigned long long cipher = 0;
   //while it would be very dumb to keep the array
   //in a numeric format, we can encode it for
-  //comparative purposes.  There are 2^49 states
+  //comparative purposes.  There are 3^49 states
   int c = 1;
   for(int x = 0; x < 7; x++){
     for(int y = 0; y < 7; y++){
@@ -140,7 +172,11 @@ unsigned long long toNumber(int plain[7][7]){
   return cipher;
 }
 
+/*
+* Modified from 8-tile game
+*/
 void dfs(int sm[][7]){
+  //declarations
   std::stack<nodeP> open;
 	nodeP *np;
 	np = new nodeP[200000];
@@ -149,43 +185,42 @@ void dfs(int sm[][7]){
 	node *start, *current, *succ;
 	long sucnum;
 	start = new node(sm);
-						  //	cout << start->parent << endl;
 	int temp[7][7], success = 0;
 
+  //add start state to set and stack
 	open.push(start);
 	np[npCount++] = start;
 	close.insert(toNumber(start->b));
 	long gencount = 1;
-	//	cout << getnumber(start->m) << endl;
 	while (!open.empty() && !success)
 	{
     current = open.top();
 		open.pop();
 
-		//		cout << getnumber(current->m) << endl;
 		if (isBeat(current->b))
 		{
       printsolution(current);
-			std::cout << "Solution Found.  Total of " << gencount
-				<< " nodes examined.\n\n";
+			printf( "Solution Found.  Total of %d nodes examined.\n\n", gencount);
 
 			success = 1;
 		}
-		else
+		else  //if we can keep going
 		{
-      for(int a = 0; a < 9; a++){
-        for(int b = 0; b < 9; b++){
+      //for every possible peg...
+      for(int a = 0; a < 7; a++){
+        for(int b = 0; b < 7; b++){
+          //...see if we can jump in every direction...
           if(jump(b, a, current->b, 0, temp) == 1){
+            //...and for each direction we can jump in
             sucnum = toNumber(temp);
             if(close.find(sucnum) == close.end()){
+              //...add that jump to stack if it hasn't already been seen
               succ = new node(temp, current);
               close.insert(sucnum);
               open.push(succ);
               np[npCount++] = succ;
               gencount++;
-
             }
-
           }
           if(jump(b, a, current->b, 1, temp) == 1){
             sucnum = toNumber(temp);
@@ -224,11 +259,12 @@ void dfs(int sm[][7]){
 		}
 	} // end of while
 
+  //we either ended because we saw every state or found Solution
+  //if we found solution, print it.  then clear memory and exit
 	if (!success)
 	{
-		std::cout << "No solution.\n";
-		std::cout << "Total of " << gencount
-			<< " nodes examined.\n\n";
+		printf("No solution.\n");
+		printf("Total of %d nodes examined.\n\n", gencount);
 	}
 
 	for (int j = 0; j<npCount; j++)
@@ -237,7 +273,11 @@ void dfs(int sm[][7]){
 	delete[] np;
 }
 
+/*
+* Modified from 8-tile game
+*/
 void bfs(int sm[][7]){
+  //declarations
   std::queue<nodeP> open;
 	nodeP *np;
 	np = new nodeP[200000];
@@ -246,33 +286,35 @@ void bfs(int sm[][7]){
 	node *start, *current, *succ;
 	long sucnum;
 	start = new node(sm);
-						  //	cout << start->parent << endl;
+
 	int temp[7][7], success = 0;
 
+  //add to queue
 	open.push(start);
 	np[npCount++] = start;
 	close.insert(toNumber(start->b));
 	long gencount = 1;
-	//	cout << getnumber(start->m) << endl;
+
+  //while unbeaten states remain...
 	while (!open.empty() && !success)
 	{
     current = open.front();
 		open.pop();
 
-		//		cout << getnumber(current->m) << endl;
 		if (isBeat(current->b))
 		{
       printsolution(current);
-			std::cout << "Solution Found.  Total of " << gencount
-				<< " nodes examined.\n\n";
+			printf("Solution Found.  Total of %d nodes examined.\n\n", gencount);
 			success = 1;
 		}
 		else
 		{
-      for(int a = 0; a < 9; a++){
-        for(int b = 0; b < 9; b++){
+      //...for each peg see if we can jump in each direction
+      for(int a = 0; a < 7; a++){
+        for(int b = 0; b < 7; b++){
           if(jump(b, a, current->b, 0, temp) == 1){
             sucnum = toNumber(temp);
+            //for each unvisited jump we can make, enqueue it
             if(close.find(sucnum) == close.end()){
               succ = new node(temp, current);
               close.insert(sucnum);
@@ -324,9 +366,8 @@ void bfs(int sm[][7]){
 
 	if (!success)
 	{
-		std::cout << "No solution.\n";
-		std::cout << "Total of " << gencount
-			<< " nodes examined.\n\n";
+		printf("No solution.\n");
+		printf("Total of %d nodes examined.\n\n");
 	}
 
 	for (int j = 0; j<npCount; j++)
@@ -335,31 +376,36 @@ void bfs(int sm[][7]){
 	delete[] np;
 }
 
-
+/*
+* File IO and main execution loop goes here
+*/
 int main(){
 
   //begin
-
   std::string file;
-
-
   int board[7][7];
   std::string line;
 
+
   while(true){
-      printf("Enter source filename, or 0 to exit\n");
+      //get filename and exit if neccessary
+      printf("Enter source filename, or Q/Quit to exit\n");
       std::cin >> file;
-      if(file == "0")
+      if(file == "Q" || file == "Quit")
         return 0;
 
       int x = 0;
       int y = 0;
       int broke = 0;
+
+      //otherwise open and read file
       std::ifstream infile(file);
       if(infile.is_open()){
+        //read on char at a time, until EOF
         char temp = infile.get();
         while(temp > 0){
           //read line #x...
+          //we track spaces.  one space=ignore, two spaces=that's a wall
           if(temp == 32){
             broke++;
             if(broke % 2 == 1){
@@ -368,6 +414,7 @@ int main(){
             }
           }
           else broke = 0;
+          //when we get a zero or one add that to array
           if(temp == 48){
             board[x][y] = 0;
             broke = 1;
@@ -378,6 +425,8 @@ int main(){
             broke = 1;
             x++;
           }
+          //when we get a newline, fill rest of line with wall then
+          //go to next line
           else if(temp == 13){
             while(x < 7){
               board[x][y] = 2;
@@ -403,25 +452,14 @@ int main(){
         }
     }
 
-    for(int a = 0; a < 7; a++){
-      for(int b = 0; b < 7; b++){
-        printf("%d ", board[b][a]);
-      }
-      printf("\n");
-    }
-
     infile.close();
 
-    printf("Enter 1 for DFS, other for BFS\n");
-    std::cin >> file;
-    if(file == "1"){
-      printf("Now DFSing:\n");
-      dfs(board);
-    }
-    else{
-      printf("Now BFSing:\n");
-      bfs(board);
-    }
+    //execute the algorithms and begin loop anew
+    printf("\nNow DFSing:\n");
+    dfs(board);
+    printf("\nNow BFSing:\n");
+    bfs(board);
+
 }
   return 0;
 }
