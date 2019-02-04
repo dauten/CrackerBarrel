@@ -95,6 +95,36 @@ int isBeat(int board[][7]){
   return i == 1;
 }
 
+void printsolution(node* n)
+{
+	// set up next for printing
+//	n->next=0;
+	while (n->parent)
+	{
+		n->parent->next = n;
+		n = n->parent;
+	}
+
+	int count = -1;
+	while(n)
+	{
+//		cout << n << endl;
+		count++;
+		std::cout << '\n';
+		for (int r=0;r<7;r++)
+		{
+			for (int c=0;c<7;c++)
+			  if (n->b[c][r])
+				std::cout << n->b[c][r] << " ";
+			  else
+				std::cout << "0 ";
+			std::cout << '\n';
+		}
+		n = n->next;
+	}
+	printf("Optimal solution has %d steps.\n", count);
+}
+
 unsigned long long toNumber(int plain[7][7]){
   unsigned long long cipher = 0;
   //while it would be very dumb to keep the array
@@ -135,8 +165,10 @@ void dfs(int sm[][7]){
 		//		cout << getnumber(current->m) << endl;
 		if (isBeat(current->b))
 		{
+      printsolution(current);
 			std::cout << "Solution Found.  Total of " << gencount
 				<< " nodes examined.\n\n";
+
 			success = 1;
 		}
 		else
@@ -230,6 +262,7 @@ void bfs(int sm[][7]){
 		//		cout << getnumber(current->m) << endl;
 		if (isBeat(current->b))
 		{
+      printsolution(current);
 			std::cout << "Solution Found.  Total of " << gencount
 				<< " nodes examined.\n\n";
 			success = 1;
@@ -306,72 +339,89 @@ void bfs(int sm[][7]){
 int main(){
 
   //begin
-  std::cout << "Enter Source Filename:" << '\n';
+
   std::string file;
-  std::cin >> file;
-  std::ifstream infile(file);
+
+
   int board[7][7];
   std::string line;
-  int x = 0;
-  int y = 0;
-  int broke = 0;
-  if(infile.is_open()){
-      char temp = infile.get();
-      while(temp > 0){
-        //read line #x...
-        if(temp == 32){
-          broke++;
-          if(broke % 2 == 1){
-            board[x][y] = 2;
-            x++;
+
+  while(true){
+      printf("Enter source filename, or 0 to exit\n");
+      std::cin >> file;
+      if(file == "0")
+        return 0;
+
+      int x = 0;
+      int y = 0;
+      int broke = 0;
+      std::ifstream infile(file);
+      if(infile.is_open()){
+        char temp = infile.get();
+        while(temp > 0){
+          //read line #x...
+          if(temp == 32){
+            broke++;
+            if(broke % 2 == 1){
+              board[x][y] = 2;
+              x++;
+            }
           }
-        }
-        else broke = 0;
-        if(temp == 48){
-          board[x][y] = 0;
-          broke = 1;
-          x++;
-        }
-        else if(temp == 49){
-          board[x][y] = 1;
-          broke = 1;
-          x++;
-        }
-        else if(temp == 13){
-          while(x < 7){
-            board[x][y] = 2;
+          else broke = 0;
+          if(temp == 48){
+            board[x][y] = 0;
             broke = 1;
             x++;
           }
-          x = 0;
-          broke = 1;
-          y++;
-        }
-        else if(x > 6){
-          x = 0;
-          broke = 1;
-          y++;
-        }
+          else if(temp == 49){
+            board[x][y] = 1;
+            broke = 1;
+            x++;
+          }
+          else if(temp == 13){
+            while(x < 7){
+              board[x][y] = 2;
+              broke = 1;
+              x++;
+            }
+            x = 0;
+            broke = 1;
+            y++;
+          }
+          else if(x > 6){
+            x = 0;
+            broke = 1;
+            y++;
+          }
 
-        temp = infile.get();
-      }
-      while(x < 7){
-        board[x][y] = 2;
-        broke = 1;
-        x++;
-      }
-  }
-
-  for(int a = 0; a < 7; a++){
-    for(int b = 0; b < 7; b++){
-      printf("%d ", board[b][a]);
+          temp = infile.get();
+        }
+        while(x < 7){
+          board[x][y] = 2;
+          broke = 1;
+          x++;
+        }
     }
-    printf("\n");
-  }
 
+    for(int a = 0; a < 7; a++){
+      for(int b = 0; b < 7; b++){
+        printf("%d ", board[b][a]);
+      }
+      printf("\n");
+    }
 
-  printf("Now DFSing:\n");
+    infile.close();
 
-  bfs(board);
+    printf("Enter 1 for DFS, other for BFS\n");
+    std::cin >> file;
+    if(file == "1"){
+      printf("Now DFSing:\n");
+      dfs(board);
+    }
+    else{
+      printf("Now BFSing:\n");
+      bfs(board);
+    }
+}
   return 0;
 }
