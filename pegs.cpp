@@ -22,12 +22,34 @@
 #include <set>
 
 /*
+* Returns score of a board state by calculating the manhatten distance
+* From each peg to ever other peg
+*/
+int manhattenScore(int board[][7]){
+  int cost = 0;
+  for(int x = 0; x < 7; x++){
+    for(int y = 0; y < 7; y++){
+      if(board[x][y] == 1){
+        for(int a = 0; a < 7; a++){
+          for(int b = 0; b < 7; b++){
+            cost += (board[a][b] == 1);
+          }
+        }
+      }
+    }
+  }
+  return cost;
+}
+
+
+/*
 * data structure for backtracking, from 8-tile
 */
 struct node {
 	int b[7][7];
 	node *parent;
 	node *next;
+  int cost;
 
 	//ctor
 	node(int sm[][7], node* p = NULL, node* n = NULL)
@@ -38,6 +60,7 @@ struct node {
 
 		parent = p;
 		next = n;
+    cost = manhattenScore(b);
 	}
 };
 typedef node* nodeP;
@@ -158,6 +181,11 @@ void printsolution(node* n) {
 		n = n->next;
 	}
 	printf("Optimal solution has %d steps.\n", count);
+}
+
+int le (node *n1, node *n2)
+{
+	return ((n1->cost) > (n2->cost));
 }
 
 /*
@@ -384,6 +412,111 @@ void bfs(int sm[][7]) {
 }
 
 /*
+* Modified from 8-tile game
+*/
+void astar(int sm[][7]) {
+	//declarations
+	std::priority_queue<nodeP> open;
+	nodeP *np;
+	np = new nodeP[200000];
+	int npCount = 0;
+	std::set<unsigned long long> close;
+	node *start, *current, *succ;
+	long sucnum;
+	start = new node(sm);
+
+	int temp[7][7], success = 0;
+
+	//add to queue
+	open.push(start);
+	np[npCount++] = start;
+	close.insert(toNumber(start->b));
+	long gencount = 1;
+
+	//while unbeaten states remain...
+	while (!open.empty() && !success)
+	{
+		current = open.top();
+		open.pop();
+
+		if (isBeat(current->b))
+		{
+			printsolution(current);
+			printf("Solution Found.  Total of %d nodes examined.\n\n", gencount);
+			success = 1;
+		}
+		else
+		{
+			//...for each peg see if we can jump in each direction
+			for (int a = 0; a < 7; a++) {
+				for (int b = 0; b < 7; b++) {
+					if (jump(b, a, current->b, 0, temp) == 1) {
+						sucnum = toNumber(temp);
+						//for each unvisited jump we can make, enqueue it
+						if (close.find(sucnum) == close.end()) {
+							succ = new node(temp, current);
+							close.insert(sucnum);
+							open.push(succ);
+							np[npCount++] = succ;
+							gencount++;
+						}
+					}
+					if (jump(b, a, current->b, 1, temp) == 1) {
+						sucnum = toNumber(temp);
+						if (close.find(sucnum) == close.end()) {
+							succ = new node(temp, current);
+							close.insert(sucnum);
+							open.push(succ);
+							np[npCount++] = succ;
+							gencount++;
+
+						}
+					}
+					if (jump(b, a, current->b, 2, temp) == 1) {
+						sucnum = toNumber(temp);
+						if (close.find(sucnum) == close.end()) {
+							succ = new node(temp, current);
+							close.insert(sucnum);
+							open.push(succ);
+							np[npCount++] = succ;
+							gencount++;
+
+						}
+					}
+					if (jump(b, a, current->b, 3, temp) == 1) {
+						sucnum = toNumber(temp);
+						if (close.find(sucnum) == close.end()) {
+							succ = new node(temp, current);
+							close.insert(sucnum);
+							open.push(succ);
+							np[npCount++] = succ;
+							gencount++;
+
+						}
+					}
+
+
+				}
+			}
+
+		}
+	} // end of while
+
+	if (!success)
+	{
+		printf("No solution.\n");
+		printf("Total of %d nodes examined.\n\n", gencount);
+	}
+
+	for (int j = 0; j<npCount; j++)
+		delete np[j];
+
+	delete[] np;
+}
+
+
+
+/*
 * File IO and main execution loop goes here
 */
 int main() {
@@ -470,7 +603,9 @@ int main() {
 		printf("\nNow DFSing:\n");
 		dfs(board);
 		printf("\nNow BFSing:\n");
-		bfs(board);
+	//	bfs(board);
+    printf("\nNow for the real shit:\n");
+    astar(board);
 
 	}
 	return 0;
