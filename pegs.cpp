@@ -21,24 +21,33 @@
 #include <queue>
 #include <set>
 
+int abs(int i){
+  if(i < 0)
+    return (i* -1);
+  else
+    return i;
+}
+
 /*
 * Returns score of a board state by calculating the manhatten distance
 * From each peg to ever other peg
 */
 int manhattenScore(int board[][7]){
-  int cost = 0;
+  int pegs = 0;
+  int man = 0;
   for(int x = 0; x < 7; x++){
     for(int y = 0; y < 7; y++){
       if(board[x][y] == 1){
+        pegs++;
         for(int a = 0; a < 7; a++){
           for(int b = 0; b < 7; b++){
-            cost += (board[a][b] == 1);
+            man += abs(x-a) + abs(y-b);
           }
         }
       }
     }
   }
-  return cost;
+  return (man / (pegs * 2))*100;
 }
 
 
@@ -49,7 +58,7 @@ struct node {
 	int b[7][7];
 	node *parent;
 	node *next;
-  int cost;
+  int fv, hv, gv;
 
 	//ctor
 	node(int sm[][7], node* p = NULL, node* n = NULL)
@@ -60,10 +69,15 @@ struct node {
 
 		parent = p;
 		next = n;
-    cost = manhattenScore(b);
 	}
 };
 typedef node* nodeP;
+
+struct LE{
+	bool operator()( node*  lhs, node* rhs) const{
+		return lhs->fv > rhs->fv; // use > for less than since priority queue is a max heap
+	}
+};
 
 /*
 * given a source peg, a board, and a direction, that peg
@@ -183,10 +197,6 @@ void printsolution(node* n) {
 	printf("Optimal solution has %d steps.\n", count);
 }
 
-int le (node *n1, node *n2)
-{
-	return ((n1->cost) > (n2->cost));
-}
 
 /*
 * Encodes state as a number, similar logic to how chmod on Unix
@@ -416,7 +426,7 @@ void bfs(int sm[][7]) {
 */
 void astar(int sm[][7]) {
 	//declarations
-	std::priority_queue<nodeP> open;
+	std::priority_queue<node*, std::vector<node*>, LE> open;
 	nodeP *np;
 	np = new nodeP[200000];
 	int npCount = 0;
@@ -424,7 +434,7 @@ void astar(int sm[][7]) {
 	node *start, *current, *succ;
 	long sucnum;
 	start = new node(sm);
-
+  start->gv = 0;
 	int temp[7][7], success = 0;
 
 	//add to queue
@@ -447,6 +457,7 @@ void astar(int sm[][7]) {
 		}
 		else
 		{
+      int fv, gv, hv;
 			//...for each peg see if we can jump in each direction
 			for (int a = 0; a < 7; a++) {
 				for (int b = 0; b < 7; b++) {
@@ -456,6 +467,11 @@ void astar(int sm[][7]) {
 						if (close.find(sucnum) == close.end()) {
 							succ = new node(temp, current);
 							close.insert(sucnum);
+
+              succ->hv = manhattenScore(temp);
+              succ->gv = current->gv + 1;
+              succ->fv = succ->hv+succ->gv;
+
 							open.push(succ);
 							np[npCount++] = succ;
 							gencount++;
@@ -466,6 +482,11 @@ void astar(int sm[][7]) {
 						if (close.find(sucnum) == close.end()) {
 							succ = new node(temp, current);
 							close.insert(sucnum);
+
+              succ->hv = manhattenScore(temp);
+              succ->gv = current->gv + 1;
+              succ->fv = succ->hv+succ->gv;
+
 							open.push(succ);
 							np[npCount++] = succ;
 							gencount++;
@@ -477,6 +498,11 @@ void astar(int sm[][7]) {
 						if (close.find(sucnum) == close.end()) {
 							succ = new node(temp, current);
 							close.insert(sucnum);
+
+              succ->hv = manhattenScore(temp);
+              succ->gv = current->gv + 1;
+              succ->fv = succ->hv+succ->gv;
+
 							open.push(succ);
 							np[npCount++] = succ;
 							gencount++;
@@ -488,6 +514,11 @@ void astar(int sm[][7]) {
 						if (close.find(sucnum) == close.end()) {
 							succ = new node(temp, current);
 							close.insert(sucnum);
+
+              succ->hv = manhattenScore(temp);
+              succ->gv = current->gv + 1;
+              succ->fv = succ->hv+succ->gv;
+
 							open.push(succ);
 							np[npCount++] = succ;
 							gencount++;
