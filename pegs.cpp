@@ -21,6 +21,7 @@
 #include <queue>
 #include <set>
 
+
 int abs(int i){
   if(i < 0)
     return (i* -1);
@@ -32,15 +33,15 @@ int abs(int i){
 * Returns score of a board state by calculating the manhatten distance
 * From each peg to ever other peg
 */
-int manhattenScore(int board[][7]){
+int manhattenScore(int board[][9]){
   int pegs = 0;
   int man = 0;
-  for(int x = 0; x < 7; x++){
-    for(int y = 0; y < 7; y++){
+  for(int x = 0; x < 9; x++){
+    for(int y = 0; y < 9; y++){
       if(board[x][y] == 1){
         pegs++;
-        for(int a = 0; a < 7; a++){
-          for(int b = 0; b < 7; b++){
+        for(int a = 0; a < 9; a++){
+          for(int b = 0; b < 9; b++){
             man += abs(x-a) + abs(y-b);
           }
         }
@@ -55,16 +56,16 @@ int manhattenScore(int board[][7]){
 * data structure for backtracking, from 8-tile
 */
 struct node {
-	int b[7][7];
+	int b[9][9];
 	node *parent;
 	node *next;
   int fv, hv, gv;
 
 	//ctor
-	node(int sm[][7], node* p = NULL, node* n = NULL)
+	node(int sm[][9], node* p = NULL, node* n = NULL)
 	{
-		for (int r = 0; r<7; r++)
-			for (int c = 0; c<7; c++)
+		for (int r = 0; r<9; r++)
+			for (int c = 0; c<9; c++)
 				b[r][c] = sm[r][c];
 
 		parent = p;
@@ -85,7 +86,7 @@ struct LE{
 * if legal, move is executed and 1 is returned.
 * if illegal, no action is taken and 0 is returned.
 */
-int jump(int x, int y, int board[][7], int dir, int out[][7]) {
+int jump(int x, int y, int board[][9], int dir, int out[][9]) {
 	//dir; up = 0, right = 1, down = 2, left = 3
 	int targ_x, targ_y, victum_x, victum_y;
 
@@ -125,8 +126,8 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]) {
 	}
 
 	//we don't want to mutate original board but rather something passed by user
-	for (int a = 0; a < 7; a++) {
-		for (int b = 0; b < 7; b++) {
+	for (int a = 0; a < 9; a++) {
+		for (int b = 0; b < 9; b++) {
 			out[a][b] = board[a][b];
 		}
 	}
@@ -150,10 +151,10 @@ int jump(int x, int y, int board[][7], int dir, int out[][7]) {
 /*
 * Checks if there is only one peg remaining
 */
-int isBeat(int board[][7]) {
+int isBeat(int board[][9]) {
 	int i = 0; // one count
-	for (int a = 0; a < 7; a++) {
-		for (int b = 0; b < 7; b++) {
+	for (int a = 0; a < 9; a++) {
+		for (int b = 0; b < 9; b++) {
 			i += (board[b][a] == 1);
 		}
 	}
@@ -181,9 +182,9 @@ void printsolution(node* n) {
 		//go through all children, printing them out
 		count++;
 		printf("\n");
-		for (int r = 0; r<7; r++)
+		for (int r = 0; r<9; r++)
 		{
-			for (int c = 0; c<7; c++)
+			for (int c = 0; c<9; c++)
 				if (n->b[c][r] == 1)
 					printf("%d ", n->b[c][r]);
 				else if (n->b[c][r])
@@ -202,14 +203,14 @@ void printsolution(node* n) {
 * Encodes state as a number, similar logic to how chmod on Unix
 * works but exapanded to include walls and 49 locations
 */
-unsigned long long toNumber(int plain[7][7]) {
+unsigned long long toNumber(int plain[9][9]) {
 	unsigned long long cipher = 0;
 	//while it would be very dumb to keep the array
 	//in a numeric format, we can encode it for
 	//comparative purposes.  There are 3^49 states
 	int c = 1;
-	for (int x = 0; x < 7; x++) {
-		for (int y = 0; y < 7; y++) {
+	for (int x = 0; x < 9; x++) {
+		for (int y = 0; y < 9; y++) {
 			cipher += c * (1 == plain[x][y]);
 			c *= 3;
 		}
@@ -220,7 +221,7 @@ unsigned long long toNumber(int plain[7][7]) {
 /*
 * Modified from 8-tile game
 */
-void dfs(int sm[][7]) {
+void dfs(int sm[][9]) {
 	//declarations
 	std::stack<nodeP> open;
 	nodeP *np;
@@ -230,7 +231,7 @@ void dfs(int sm[][7]) {
 	node *start, *current, *succ;
 	long sucnum;
 	start = new node(sm);
-	int temp[7][7], success = 0;
+	int temp[9][9], success = 0;
 
 	//add start state to set and stack
 	open.push(start);
@@ -252,8 +253,8 @@ void dfs(int sm[][7]) {
 		else  //if we can keep going
 		{
 			//for every possible peg...
-			for (int a = 0; a < 7; a++) {
-				for (int b = 0; b < 7; b++) {
+			for (int a = 0; a < 9; a++) {
+				for (int b = 0; b < 9; b++) {
 					//...see if we can jump in every direction...
 					if (jump(b, a, current->b, 0, temp) == 1) {
 						//...and for each direction we can jump in
@@ -321,7 +322,7 @@ void dfs(int sm[][7]) {
 /*
 * Modified from 8-tile game
 */
-void bfs(int sm[][7]) {
+void bfs(int sm[][9]) {
 	//declarations
 	std::queue<nodeP> open;
 	nodeP *np;
@@ -332,7 +333,7 @@ void bfs(int sm[][7]) {
 	long sucnum;
 	start = new node(sm);
 
-	int temp[7][7], success = 0;
+	int temp[9][9], success = 0;
 
 	//add to queue
 	open.push(start);
@@ -355,8 +356,8 @@ void bfs(int sm[][7]) {
 		else
 		{
 			//...for each peg see if we can jump in each direction
-			for (int a = 0; a < 7; a++) {
-				for (int b = 0; b < 7; b++) {
+			for (int a = 0; a < 9; a++) {
+				for (int b = 0; b < 9; b++) {
 					if (jump(b, a, current->b, 0, temp) == 1) {
 						sucnum = toNumber(temp);
 						//for each unvisited jump we can make, enqueue it
@@ -424,7 +425,7 @@ void bfs(int sm[][7]) {
 /*
 * Modified from 8-tile game
 */
-void astar(int sm[][7]) {
+void astar(int sm[][9]) {
 	//declarations
 	std::priority_queue<node*, std::vector<node*>, LE> open;
 	nodeP *np;
@@ -435,7 +436,7 @@ void astar(int sm[][7]) {
 	long sucnum;
 	start = new node(sm);
   start->gv = 0;
-	int temp[7][7], success = 0;
+	int temp[9][9], success = 0;
 
 	//add to queue
 	open.push(start);
@@ -459,8 +460,8 @@ void astar(int sm[][7]) {
 		{
       int fv, gv, hv;
 			//...for each peg see if we can jump in each direction
-			for (int a = 0; a < 7; a++) {
-				for (int b = 0; b < 7; b++) {
+			for (int a = 0; a < 9; a++) {
+				for (int b = 0; b < 9; b++) {
 					if (jump(b, a, current->b, 0, temp) == 1) {
 						sucnum = toNumber(temp);
 						//for each unvisited jump we can make, enqueue it
@@ -554,7 +555,7 @@ int main() {
 
 	//begin
 	std::string input;
-	int board[7][7];
+	int board[9][9];
 	std::string line;
 
 
@@ -600,7 +601,7 @@ int main() {
 				//go to next line
         //this must be 13 on linux, 10 on windows
 				else if (temp == 13) {
-					while (x < 7) {
+					while (x < 9) {
 						board[x][y] = 2;
 						broke = 1;
 						x++;
@@ -609,7 +610,7 @@ int main() {
 					broke = 1;
 					y++;
 				}
-				else if (x > 6) {
+				else if (x > 8) {
 					x = 0;
 					broke = 1;
 					y++;
@@ -617,7 +618,7 @@ int main() {
 
 				temp = infile.get();
 			}
-			while (x < 7) {
+			while (x < 9) {
 				board[x][y] = 2;
 				broke = 1;
 				x++;
@@ -629,7 +630,12 @@ int main() {
 
 		infile.close();
 
-
+    for(int i = 0; i < 9; i++){
+      for(int y = 0; y < 9; y++){
+        printf("%d ", board[y][i]);
+      }
+      printf("\n");
+    }
 		//execute the algorithms and begin loop anew
 		printf("\nNow DFSing:\n");
 		dfs(board);
