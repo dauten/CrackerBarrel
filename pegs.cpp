@@ -1,15 +1,13 @@
 //#include "stdafx.h" //for Visual Studio
 /*
 * Author: Dale Auten
-* DateMod:2/4/2019
+* DateMod:2/10/2019
 * Desc:   Peg hopping game naive solution.
 *         DFS solves all given inputs
 *         BFS solves all but diamond and solitaire (runs out of memory)
 *         Some pieces of code modifed from 8-tile game given.
-* DueDate:2/7/2019
+* DueDate:2/14/2019
 *
-* Cases:  All shapes are quickly completed by DFS, BFS completes all but diamond and solitaire
-		  DFS does them all in <2 seconds.  BFS does the ones it does within <5 seconds
 * Notes:  This is assuming you run the exe put in the Debug folder.
 *		  Relative filenames may not work when run from debugger unless they're added to the project
 */
@@ -553,6 +551,7 @@ void astar(int sm[][9]) {
 */
 int main() {
 
+
 	//begin
 	std::string input;
 	int board[9][9];
@@ -568,13 +567,15 @@ int main() {
 		std::string  file = input + ".in";
 		int x = 0;
 		int y = 0;
-		int broke = 0;
+		int broke = 1;
 
 		//otherwise open and read file
 		std::ifstream infile(file.c_str());
 		if (infile.is_open()) {
+
 			//read on char at a time, until EOF
 			char temp = infile.get();
+
 			while (temp > 0) {
 				//read line #x...
 				//we track spaces.  one space=ignore, two spaces=that's a wall
@@ -583,32 +584,38 @@ int main() {
 					if (broke % 2 == 1) {
 						board[x][y] = 2;
 						x++;
+            printf("2.");
 					}
 				}
-				else broke = 0;
 				//when we get a zero or one add that to array
 				if (temp == 48) {
 					board[x][y] = 0;
 					broke = 1;
 					x++;
+          printf("0 ");
 				}
 				else if (temp == 49) {
 					board[x][y] = 1;
 					broke = 1;
 					x++;
+          printf("1 ");
 				}
 				//when we get a newline, fill rest of line with wall then
 				//go to next line
         //this must be 13 on linux, 10 on windows
 				else if (temp == 13) {
-					while (x < 9) {
+					while (x < 9 ) {
 						board[x][y] = 2;
 						broke = 1;
 						x++;
+            printf("2 ");
+
 					}
+
 					x = 0;
 					broke = 1;
 					y++;
+          printf("\n");
 				}
 				else if (x > 8) {
 					x = 0;
@@ -618,15 +625,27 @@ int main() {
 
 				temp = infile.get();
 			}
-			while (x < 9) {
+			while (x < 9 && y < 9) {
 				board[x][y] = 2;
 				broke = 1;
 				x++;
+        printf("2!");
 			}
 		}
 		else {
 			printf("Failed to open file\n");
 		}
+    printf("\nx is %d and y is %d\n", x, y);
+    while(y < 9){
+      //then fill rest of board with 2.
+      while (x < 9) {
+        board[x][y] = 2;
+        broke = 1;
+        x++;
+      }
+      y++;
+      x=0;
+    }
 
 		infile.close();
 
@@ -637,11 +656,11 @@ int main() {
       printf("\n");
     }
 		//execute the algorithms and begin loop anew
-		printf("\nNow DFSing:\n");
-		dfs(board);
-		printf("\nNow BFSing:\n");
-	//	bfs(board);
-    printf("\nNow for the real shit:\n");
+		//printf("\nNow DFSing:\n");
+		//dfs(board);
+		//printf("\nNow BFSing:\n");
+		//bfs(board);
+    printf("\nSolving with A* heuristic:\n");
     astar(board);
 
 	}
