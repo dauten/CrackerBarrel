@@ -20,11 +20,11 @@
 #include <set>
 
 
-int abs(int i){
-  if(i < 0)
-    return (i* -1);
+int abs(int a, int b){
+  if(a > b)
+	return a-b;
   else
-    return i;
+	return b-a;
 }
 
 /*
@@ -40,13 +40,13 @@ int manhattenScore(int board[][9]){
         pegs++;
         for(int a = 0; a < 9; a++){
           for(int b = 0; b < 9; b++){
-            man += abs(x-a) + abs(y-b);
+            man += abs(x,a) + abs(y,b);
           }
         }
       }
     }
   }
-  return (man / (pegs * 2))*100;
+  return (man / (pegs * 2))*170;
 }
 
 
